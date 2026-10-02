@@ -53,6 +53,36 @@
     <button id="bn">Siguiente</button>
   </footer>
 
+    <!-- Botón Flotante del Carrito -->
+  <button id="cart-float-btn" onclick="toggleCart()">
+    🛒 <span id="cart-count">0</span>
+  </button>
+
+  <!-- Modal / Ventana del Carrito -->
+  <div id="cart-modal" class="cart-modal">
+    <div class="cart-overlay" onclick="toggleCart()"></div>
+    <div class="cart-content">
+      <div class="cart-header">
+        <h3>Mi Pedido 🛒</h3>
+        <button class="cart-close" onclick="toggleCart()">✕</button>
+      </div>
+      
+      <div id="cart-items" class="cart-items">
+        <!-- Se genera dinámicamente -->
+      </div>
+      
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total estimado:</span>
+          <strong id="cart-total-price">$0</strong>
+        </div>
+        <button class="cart-send-btn" onclick="sendWhatsApp()">
+          📲 Enviar Pedido por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
 const $ = i => document.getElementById(i);
 const m = n => "$" + (n || 0).toLocaleString("es-AR");
 
-// 1. Ruta de tu imagen por defecto
+// ⚠️ CONFIGURACIÓN: Reemplaza con tu número de WhatsApp (sin '+' ni espacios)
+const NUMERO_WHATSAPP = "+54 9 11 3683-7433".replace(/\D/g, ""); 
+
 const DEFAULT_IMG = "default-perfume.png";
 
-// 2. Precargar inmediatamente la imagen por defecto en la memoria del navegador
 const defaultImgPreload = new Image();
 defaultImgPreload.src = DEFAULT_IMG;
 
@@ -14,17 +15,14 @@ let busy = false;
 let PG = [];
 let SECS = [];
 let allProducts = [];
+let cart = []; // Estado del carrito
 
-// Precarga e inspección de imágenes en segundo plano (repara links rotos en memoria)
+// Precarga e inspección de imágenes en segundo plano
 function preloadImages(productos) {
   productos.forEach(p => {
     if (p.imagen && p.imagen.trim() !== "" && p.imagen !== DEFAULT_IMG) {
       const img = new Image();
-      img.onload = () => {};
-      img.onerror = () => {
-        // Si el link de Google Sheets está roto, lo reemplazamos directamente en memoria
-        p.imagen = DEFAULT_IMG;
-      };
+      img.onerror = () => { p.imagen = DEFAULT_IMG; };
       img.src = p.imagen;
     } else {
       p.imagen = DEFAULT_IMG;
@@ -61,20 +59,117 @@ const card = (d) => {
       <div class="t">
         <b>${d.nombre}</b>
         <small>${d.detalles}</small>
-        <div class="pr">
-          <span>UNIDAD</span>
-          <strong>${m(d.precio_unitario)}</strong>
+        
+        <div class="pr pr-action">
+          <div>
+            <span>UNIDAD</span>
+            <strong>${m(d.precio_unitario)}</strong>
+          </div>
+          <button class="btn-add" onclick="addToCart(${d._idx}, 'Unidad')">+ Agregar</button>
         </div>
+
         ${d.empaque_bulto && d.precio_bulto > 0 ? `
-          <div class="pr bx">
-            <span>${d.empaque_bulto}</span>
-            <strong>${m(d.precio_bulto)}</strong>
+          <div class="pr bx pr-action">
+            <div>
+              <span>${d.empaque_bulto}</span>
+              <strong>${m(d.precio_bulto)}</strong>
+            </div>
+            <button class="btn-add" onclick="addToCart(${d._idx}, '${d.empaque_bulto}')">+ Agregar</button>
           </div>
         ` : ''}
       </div>
     </div>
   `;
 };
+
+// Lógica del Carrito
+function addToCart(prodIndex, tipo) {
+  const prod = allProducts[prodIndex];
+  if (!prod) return;
+
+  const precio = tipo === 'Unidad' ? Number(prod.precio_unitario) : Number(prod.precio_bulto);
+  const key = `${prodIndex}_${tipo}`;
+
+  const existing = cart.find(item => item.key === key);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      key,
+      prodIndex,
+      nombre: prod.nombre,
+      tipo,
+      precio,
+      imagen: prod.imagen || DEFAULT_IMG,
+      qty: 1
+    });
+  }
+
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  const totalPrice = cart.reduce((sum, item) => sum + (item.precio * item.qty), 0);
+
+  $("cart-count").textContent = totalItems;
+  $("cart-total-price").textContent = m(totalPrice);
+
+  const container = $("cart-items");
+  if (cart.length === 0) {
+    container.innerHTML = `<div class="cart-empty">El carrito está vacío 🌸</div>`;
+    return;
+  }
+
+  container.innerHTML = cart.map((item, idx) => `
+    <div class="cart-item">
+      <img src="${item.imagen}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
+      <div class="cart-item-info">
+        <strong>${item.nombre}</strong>
+        <small>${item.tipo} - ${m(item.precio)} c/u</small>
+      </div>
+      <div class="cart-qty-ctrl">
+        <button onclick="changeQty(${idx}, -1)">-</button>
+        <span>${item.qty}</span>
+        <button onclick="changeQty(${idx}, 1)">+</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function changeQty(index, delta) {
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
+  updateCartUI();
+}
+
+function toggleCart() {
+  $("cart-modal").classList.toggle("active");
+}
+
+function sendWhatsApp() {
+  if (cart.length === 0) {
+    alert("El carrito está vacío. Agrega productos antes de enviar el pedido.");
+    return;
+  }
+
+  let text = "🌸 *NUEVO PEDIDO DE CATÁLOGO*\n\n";
+  let total = 0;
+
+  cart.forEach(item => {
+    const subtotal = item.precio * item.qty;
+    total += subtotal;
+    text += `• *${item.qty}x* ${item.nombre} (${item.tipo}) - ${m(subtotal)}\n`;
+  });
+
+  text += `\n*TOTAL ESTIMADO:* ${m(total)}\n\n`;
+  text += "¡Hola! Quisiera coordinar el pago y envío de este pedido.";
+
+  const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank");
+}
 
 function page(n) {
   const p = PG[n];
@@ -93,7 +188,7 @@ function page(n) {
     `;
   }
   if (p === "how") {
-    return `<div class="pg"><div class="how"><h2>¿Cómo pedir?</h2><p>1. Hacé captura de pantalla del perfume.</p><p>2. Envianos por WhatsApp la foto y la cantidad que querés.</p></div></div>`;
+    return `<div class="pg"><div class="how"><h2>¿Cómo pedir?</h2><p>1. Seleccioná tus perfumes con el botón <b>+ Agregar</b>.</p><p>2. Tocá el botón verde del carrito para revisar tu pedido.</p><p>3. Hacé clic en <b>Enviar Pedido por WhatsApp</b>.</p></div></div>`;
   }
 
   return `
@@ -170,20 +265,16 @@ function flip(to) {
 const go = d => flip(cur + d);
 
 function buildPages(productos) {
-  // Filtrar productos que "se dejaron de vender"
   const productosVisibles = productos.filter(p => {
     const st = (p.estado || "").toString().toLowerCase().trim();
     return st !== "se dejo de vender" && st !== "se dejó de vender" && st !== "desactivado";
   });
 
-  // Asignar un índice único a cada producto para el rastreo de errores
   productosVisibles.forEach((prod, i) => {
     prod._idx = i;
   });
 
   allProducts = productosVisibles;
-
-  // Precargar imágenes e identificar links rotos en segundo plano
   preloadImages(productosVisibles);
 
   PG = ["cover", "index", "how"];
@@ -240,7 +331,6 @@ function buildPages(productos) {
   });
 
   N = PG.length;
-
   $("jump").innerHTML = '<option value="">Ir a…</option>' + SECS.map(s => `<option value="${s[1]}">${s[0]}</option>`).join("");
 }
 
@@ -302,7 +392,7 @@ async function loadCatalog() {
   
   const CACHE_KEY = "catalogo_perfumes_data";
   const CACHE_TIME_KEY = "catalogo_perfumes_time";
-  const CACHE_TTL = 5 * 60 * 1000;
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de caché
 
   const cachedData = localStorage.getItem(CACHE_KEY);
   const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
@@ -378,6 +468,10 @@ bk.addEventListener("touchend", e => {
 
 addEventListener("resize", fit);
 
+window.addToCart = addToCart;
+window.changeQty = changeQty;
+window.toggleCart = toggleCart;
+window.sendWhatsApp = sendWhatsApp;
 window.allProducts = allProducts;
 window.flip = flip;
 
