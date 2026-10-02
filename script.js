@@ -1,7 +1,12 @@
 const $ = i => document.getElementById(i);
 const m = n => "$" + (n || 0).toLocaleString("es-AR");
 
-const DEFAULT_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='100%25' height='100%25' fill='%23f1ecf8'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%238a5fc7'%3ESin Imagen%3C/text%3E%3C/svg%3E";
+// 1. Ruta de tu imagen por defecto
+const DEFAULT_IMG = "default-perfume.png";
+
+// 2. Precargar inmediatamente la imagen por defecto en la memoria del navegador
+const defaultImgPreload = new Image();
+defaultImgPreload.src = DEFAULT_IMG;
 
 let cur = 0;
 let N = 0;
@@ -10,12 +15,49 @@ let PG = [];
 let SECS = [];
 let allProducts = [];
 
+// Precarga e inspección de imágenes en segundo plano (repara links rotos en memoria)
+function preloadImages(productos) {
+  productos.forEach(p => {
+    if (p.imagen && p.imagen.trim() !== "" && p.imagen !== DEFAULT_IMG) {
+      const img = new Image();
+      img.onload = () => {};
+      img.onerror = () => {
+        // Si el link de Google Sheets está roto, lo reemplazamos directamente en memoria
+        p.imagen = DEFAULT_IMG;
+      };
+      img.src = p.imagen;
+    } else {
+      p.imagen = DEFAULT_IMG;
+    }
+  });
+}
+
 // Renderizado de tarjeta de producto
 const card = (d) => {
   const imgSrc = d.imagen && d.imagen.trim() !== "" ? d.imagen : DEFAULT_IMG;
+  const estado = (d.estado || "").toString().toLowerCase().trim();
+
+  let badgeHtml = "";
+  let extraClass = "";
+
+  if (estado === "sin stock" || estado === "agotado") {
+    badgeHtml = `<div class="badge-banner sin-stock">AGOTADO</div>`;
+    extraClass = "out-of-stock";
+  } else if (estado === "pausada" || estado === "pausado") {
+    badgeHtml = `<div class="badge-banner pausado">PAUSADO</div>`;
+    extraClass = "paused";
+  }
+
   return `
-    <div class="c">
-      <img alt="" src="${imgSrc}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}'">
+    <div class="c ${extraClass}">
+      <div class="img-wrap">
+        <img alt="" 
+             src="${imgSrc}" 
+             loading="eager" 
+             decoding="async" 
+             onerror="this.onerror=null; this.src='${DEFAULT_IMG}'; if(window.allProducts && window.allProducts[${d._idx}]) window.allProducts[${d._idx}].imagen='${DEFAULT_IMG}';">
+        ${badgeHtml}
+      </div>
       <div class="t">
         <b>${d.nombre}</b>
         <small>${d.detalles}</small>
@@ -128,7 +170,22 @@ function flip(to) {
 const go = d => flip(cur + d);
 
 function buildPages(productos) {
-  allProducts = productos;
+  // Filtrar productos que "se dejaron de vender"
+  const productosVisibles = productos.filter(p => {
+    const st = (p.estado || "").toString().toLowerCase().trim();
+    return st !== "se dejo de vender" && st !== "se dejó de vender" && st !== "desactivado";
+  });
+
+  // Asignar un índice único a cada producto para el rastreo de errores
+  productosVisibles.forEach((prod, i) => {
+    prod._idx = i;
+  });
+
+  allProducts = productosVisibles;
+
+  // Precargar imágenes e identificar links rotos en segundo plano
+  preloadImages(productosVisibles);
+
   PG = ["cover", "index", "how"];
   SECS = [
     ["Índice", 1],
@@ -136,7 +193,7 @@ function buildPages(productos) {
   ];
 
   const categoriasMap = {};
-  productos.forEach(prod => {
+  productosVisibles.forEach(prod => {
     const cat = prod.categoria && prod.categoria.trim() !== "" ? prod.categoria : "General";
     if (!categoriasMap[cat]) categoriasMap[cat] = [];
     categoriasMap[cat].push(prod);
@@ -245,7 +302,7 @@ async function loadCatalog() {
   
   const CACHE_KEY = "catalogo_perfumes_data";
   const CACHE_TIME_KEY = "catalogo_perfumes_time";
-  const CACHE_TTL = 30 * 60 * 1000; // 30 minutos
+  const CACHE_TTL = 30 * 60 * 1000;
 
   const cachedData = localStorage.getItem(CACHE_KEY);
   const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
@@ -321,6 +378,7 @@ bk.addEventListener("touchend", e => {
 
 addEventListener("resize", fit);
 
+window.allProducts = allProducts;
 window.flip = flip;
 
 loadCatalog();

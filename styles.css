@@ -229,14 +229,54 @@ main {
   overflow: hidden;
 }
 
-.c img {
+/* --- Contenedor de Imagen adaptado --- */
+.img-wrap {
+  position: relative;
   width: 206px;
   height: 206px;
   border-radius: 12px;
-  object-fit: cover;
   flex: none;
   align-self: center;
   background: #fff;
+  overflow: hidden;
+}
+
+.img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Franja sobre la Imagen (Agotado / Pausado) --- */
+.badge-banner {
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  right: -20%;
+  transform: translateY(-50%) rotate(-12deg);
+  background: rgba(211, 47, 47, 0.92); /* Rojo llamativo */
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+  padding: 7px 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.badge-banner.pausado {
+  background: rgba(230, 126, 34, 0.92); /* Naranja */
+}
+
+/* Efecto opaco/atenuado para resaltar la franja */
+.c.out-of-stock img,
+.c.paused img {
+  opacity: 0.55;
+  filter: grayscale(35%);
 }
 
 .t {
@@ -365,7 +405,7 @@ main {
 .search-container {
   position: relative;
   flex: 1;
-  max-width: 260px;
+  max-width: 300px;
 }
 
 .search-container input {
@@ -385,19 +425,20 @@ main {
   border-color: #8a5fc7;
 }
 
-/* Desplegable de Resultados */
+/* Desplegable de Resultados (Ancho expandido) */
 .search-results {
   position: absolute;
   top: 100%;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%); /* Centra el desplegable respecto al input */
+  width: clamp(340px, 90vw, 420px); /* Ocupa hasta 420px de ancho */
   margin-top: 6px;
   background: var(--bar);
   border: 1px solid #8884;
   border-radius: 12px;
-  max-height: 320px;
+  max-height: 360px;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
   z-index: 100;
   display: none;
 }
@@ -409,8 +450,8 @@ main {
 .search-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 12px;
+  padding: 9px 12px;
   cursor: pointer;
   border-bottom: 1px solid #8882;
   transition: background 0.2s;
@@ -425,9 +466,9 @@ main {
 }
 
 .search-item img {
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -446,7 +487,7 @@ main {
 }
 
 .search-item-info small {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--mut);
   display: block;
   white-space: nowrap;
@@ -459,13 +500,13 @@ main {
   font-weight: 600;
   color: #5b3a8e;
   background: #efe8fa;
-  padding: 3px 7px;
+  padding: 4px 8px;
   border-radius: 6px;
   white-space: nowrap;
 }
 
 .no-search-results {
-  padding: 12px;
+  padding: 14px;
   font-size: 13px;
   color: var(--mut);
   text-align: center;
