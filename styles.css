@@ -425,13 +425,13 @@ main {
   border-color: #8a5fc7;
 }
 
-/* Desplegable de Resultados (Ancho expandido) */
+/* Desplegable de Resultados (Versión PC) */
 .search-results {
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%); /* Centra el desplegable respecto al input */
-  width: clamp(340px, 90vw, 420px); /* Ocupa hasta 420px de ancho */
+  transform: translateX(-50%);
+  width: 420px;
   margin-top: 6px;
   background: var(--bar);
   border: 1px solid #8884;
@@ -439,7 +439,7 @@ main {
   max-height: 360px;
   overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-  z-index: 100;
+  z-index: 1000;
   display: none;
 }
 
@@ -447,11 +447,24 @@ main {
   display: block;
 }
 
+/* --- Adaptación exclusiva para Celulares --- */
+@media (max-width: 600px) {
+  .search-results {
+    position: fixed;
+    top: 50px;             /* Queda justo debajo de la barra superior */
+    left: 12px;
+    right: 12px;
+    width: auto;           /* Se estira automáticamente entre los bordes de la pantalla */
+    transform: none;       /* Desactiva el descentrado de PC */
+    max-height: 65vh;      /* Ocupa hasta el 65% del alto del celular para hacer scroll cómodo */
+  }
+}
+
 .search-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   cursor: pointer;
   border-bottom: 1px solid #8882;
   transition: background 0.2s;

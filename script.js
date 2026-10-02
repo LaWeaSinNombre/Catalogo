@@ -302,7 +302,7 @@ async function loadCatalog() {
   
   const CACHE_KEY = "catalogo_perfumes_data";
   const CACHE_TIME_KEY = "catalogo_perfumes_time";
-  const CACHE_TTL = 30 * 60 * 1000;
+  const CACHE_TTL = 5 * 60 * 1000;
 
   const cachedData = localStorage.getItem(CACHE_KEY);
   const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
