@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Título que aparecerá en la pestaña -->
+  <title>Catálogo - Nombre de tu Marca</title>
+
+  <!-- Ícono personalizado de la pestaña (favicon) -->
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <!-- Configuración para la vista previa de WhatsApp -->
+  <meta property="og:title" content="Catálogo">
+  <meta property="og:description" content="Haz clic para ver nuestro catálogo completo.">
+  <meta property="og:image" content="favicon.png">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #525659; /* Fondo oscuro mientras carga el PDF */
+    }
+    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Muestra tu PDF a pantalla completa -->
+  <iframe src="catalogo.pdf"></iframe>
+</body>
+</html>
