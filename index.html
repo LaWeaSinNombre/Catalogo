@@ -2,46 +2,60 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Título de la pestaña del navegador -->
-  <title>Catálogo - Nombre de tu Marca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Catálogo Digital de Perfumes</title>
 
-  <!-- Favicon para la pestaña de Chrome/Navegador -->
+  <!-- 1. Ícono de la pestaña del navegador -->
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- VISTA PREVIA PEQUEÑA EN WHATSAPP (SUMMARY CARD A LA IZQUIERDA) -->
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Catálogo de Productos">
-  <meta name="twitter:description" content="Haz clic para ver nuestro catálogo completo.">
-  <meta name="twitter:image" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
-
-  <!-- Open Graph -->
+  <!-- 2. Vista previa para WhatsApp y Redes Sociales (Open Graph) -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://laweasinnombre.github.io/Catalogo/">
-  <meta property="og:title" content="Catálogo de Productos">
-  <meta property="og:description" content="Haz clic para ver nuestro catálogo completo.">
-  <meta property="og:image" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
-  <meta property="og:image:secure_url" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
+  <meta property="og:title" content="Catálogo Digital de Perfumes">
+  <meta property="og:description" content="Explora nuestro catálogo interactivo. Precios actualizados por unidad y por bulto.">
+  <!-- IMPORTANTE: Reemplaza esta URL por la dirección real cuando subas la página a la web -->
+  <meta property="og:image" content="https://tu-dominio.com/favicon.png">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #525659;
-    }
-    iframe {
-      width: 100%;
-      height: 100vh;
-      border: none;
-    }
-  </style>
+  <!-- Vista previa para Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Catálogo Digital de Perfumes">
+  <meta name="twitter:description" content="Explora nuestro catálogo interactivo. Precios actualizados por unidad y por bulto.">
+  <meta name="twitter:image" content="https://tu-dominio.com/favicon.png">
+
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Visor de Google Docs embebido para forzar la lectura del PDF en celulares -->
-  <iframe src="https://docs.google.com/gview?url=https://laweasinnombre.github.io/Catalogo/Catalogo.pdf&embedded=true"></iframe>
+
+  <header>
+    <h1>Catálogo</h1>
+    
+    <!-- Contenedor del Buscador -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar perfume, SKU..." autocomplete="off">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <select id="jump">
+      <option value="">Ir a…</option>
+    </select>
+  </header>
+
+  <main>
+    <div id="book">
+      <div class="nav l" id="pl"></div>
+      <div class="nav r" id="pr"></div>
+      <div class="L" id="under"></div>
+      <div class="L" id="leaf"></div>
+    </div>
+  </main>
+
+  <footer>
+    <button id="bp" disabled>Anterior</button>
+    <span id="cnt">1 / 1</span>
+    <button id="bn">Siguiente</button>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
