@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Título de la pestaña del navegador -->
-  <title>Catálogo - Tu Empresa</title>
+  <title>Catálogo - Nombre de tu Marca</title>
 
-  <!-- Favicon para la pestaña de Chrome -->
+  <!-- Favicon para la pestaña de Chrome/Navegador -->
   <link rel="icon" type="image/png" href="favicon.png">
 
   <!-- CONFIGURACIÓN PARA LA VISTA PREVIA DE WHATSAPP -->
@@ -16,9 +16,12 @@
   <meta property="og:title" content="Catálogo de Productos">
   <meta property="og:description" content="Haz clic para ver nuestro catálogo completo.">
   
-  <!-- WhatsApp requiere la URL completa de la imagen -->
+  <!-- Datos de la imagen para la tarjeta de WhatsApp -->
   <meta property="og:image" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
   <meta property="og:image:secure_url" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="400">
+  <meta property="og:image:height" content="400">
 
   <style>
     html, body {
@@ -37,6 +40,7 @@
   </style>
 </head>
 <body>
-  <iframe src="Catalogo.pdf"></iframe>
+  <!-- Visor de Google Docs embebido para forzar la lectura del PDF en celulares -->
+  <iframe src="https://docs.google.com/gview?url=https://laweasinnombre.github.io/Catalogo/Catalogo.pdf&embedded=true"></iframe>
 </body>
 </html>
