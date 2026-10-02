@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Título que aparecerá en la pestaña -->
-  <title>Catálogo - Nombre de tu Marca</title>
+  <!-- Título de la pestaña del navegador -->
+  <title>Catálogo - Tu Empresa</title>
 
-  <!-- Ícono personalizado de la pestaña (favicon) -->
+  <!-- Favicon para la pestaña de Chrome -->
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- Configuración para la vista previa de WhatsApp -->
-  <meta property="og:title" content="Catálogo">
+  <!-- CONFIGURACIÓN PARA LA VISTA PREVIA DE WHATSAPP -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://laweasinnombre.github.io/Catalogo/">
+  <meta property="og:title" content="Catálogo de Productos">
   <meta property="og:description" content="Haz clic para ver nuestro catálogo completo.">
-  <meta property="og:image" content="favicon.png">
+  
+  <!-- WhatsApp requiere la URL completa de la imagen -->
+  <meta property="og:image" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
+  <meta property="og:image:secure_url" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
 
   <style>
     html, body {
@@ -22,7 +27,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #525659; /* Fondo oscuro mientras carga el PDF */
+      background-color: #525659;
     }
     iframe {
       width: 100%;
@@ -32,7 +37,6 @@
   </style>
 </head>
 <body>
-  <!-- Muestra tu PDF a pantalla completa -->
   <iframe src="Catalogo.pdf"></iframe>
 </body>
 </html>
