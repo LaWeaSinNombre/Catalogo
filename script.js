@@ -2,7 +2,7 @@ const $ = i => document.getElementById(i);
 const m = n => "$" + (n || 0).toLocaleString("es-AR");
 
 // ⚠️ CONFIGURACIÓN: Reemplaza con el número de WhatsApp (sin '+' ni espacios)
-const NUMERO_WHATSAPP = "5491112345678"; 
+const NUMERO_WHATSAPP = "541136837433"; 
 
 const DEFAULT_IMG = "default-perfume.png";
 
