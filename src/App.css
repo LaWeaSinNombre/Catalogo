@@ -913,28 +913,33 @@ main {
     max-height: 55vh;
   }
 
-  /* 5. Ajustes de espacio para el Footer e impedir que se corte */
+  /* 5. Footer con botones de navegación expandidos y cómodos */
   footer {
-    padding: 6px 8px;
-    gap: 8px;
+    padding: 8px 12px;
+    gap: 10px;
+    justify-content: space-between;
   }
 
   footer button {
-    min-width: 78px;
-    padding: 6px 8px;
-    font-size: 12px;
+    flex: 1;
+    max-width: 130px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 12px;
   }
 
   #cnt, .page-counter {
-    min-width: 55px;
-    font-size: 12px;
+    min-width: 60px;
+    font-size: 13px;
+    font-weight: 600;
   }
 
-  /* 6. Botón flotante del Carrito ajustado para no tapar los botones del footer */
+  /* 6. Botón flotante del Carrito (elevado para dejar libre los botones inferiores) */
   #cart-float-btn {
-    bottom: 52px;
-    right: 12px;
-    padding: 8px 14px;
+    bottom: 62px;
+    right: 14px;
+    padding: 10px 16px;
     font-size: 14px;
   }
 }
