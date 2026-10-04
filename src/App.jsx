@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { CONFIG } from "./config";
 import { formatCurrency } from "./utils/formatters";
 import { useCatalog } from "./hooks/useCatalog";
-import { precheckImage } from "./utils/imageCache";
+import { precheckImage, preloadAndValidateCatalog } from "./utils/imageCache";
 import "./App.css";
 
 import Header from "./components/Header";
@@ -127,10 +127,10 @@ export default function App() {
   // 1. Optimización del cálculo de escala para evitar Reflows constantes en el DOM
   useEffect(() => {
     const handleResize = () => {
-    const hh = 124;
-    const s = Math.min((window.innerWidth - 24) / 1000, (window.innerHeight - hh) / 1414);
-    setScale(Math.max(s, 0.15)); // <-- Protección opcional para que no baje de 0.15
-  };
+      const hh = 124;
+      const s = Math.min((window.innerWidth - 24) / 1000, (window.innerHeight - hh) / 1414);
+      setScale(Math.max(s, 0.15));
+    };
 
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -150,7 +150,14 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [curPage, pages.length, goToPage]);
 
-  // 2. Precarga de imágenes diferida y ajustada a la estructura de bloques { r: [...] }
+  // 2. Validación global en segundo plano de todo el catálogo al cargar los productos
+  useEffect(() => {
+    if (allProducts && allProducts.length > 0) {
+      preloadAndValidateCatalog(allProducts);
+    }
+  }, [allProducts]);
+
+  // 3. Precarga de imágenes diferida en páginas adyacentes
   useEffect(() => {
     if (!pages || pages.length === 0) return;
 
@@ -178,7 +185,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [curPage, pages]);
 
-  // 3. Resultados de búsqueda memorizados con useMemo
+  // 4. Resultados de búsqueda memorizados con useMemo
   const searchResults = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const term = searchTerm.toLowerCase();
@@ -190,7 +197,7 @@ export default function App() {
     );
   }, [searchTerm, allProducts]);
 
-  // 4. Totales del carrito memorizados en un solo paso
+  // 5. Totales del carrito memorizados en un solo paso
   const { totalCartItems, totalCartPrice } = useMemo(() => {
     return cart.reduce(
       (acc, item) => {
