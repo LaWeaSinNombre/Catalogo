@@ -36,7 +36,11 @@ export default function Header({
 
   return (
     <header>
-      <h1>{CONFIG.brandName}</h1>
+      {/* Contenedor de marca: en PC muestra logo + título, en móvil solo logo */}
+      <div className="header-brand">
+        <img src="/favicon.png" alt="Logo" className="header-logo" />
+        <h1 className="header-title">{CONFIG.brandName}</h1>
+      </div>
 
       <div className="search-container" ref={searchRef}>
         <input

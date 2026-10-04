@@ -127,10 +127,10 @@ export default function App() {
   // 1. Optimización del cálculo de escala para evitar Reflows constantes en el DOM
   useEffect(() => {
     const handleResize = () => {
-      const hh = 124; // Altura estimada combinada Header (~50px) + Footer (~50px) + Margins (~24px)
-      const s = Math.min((window.innerWidth - 24) / 1000, (window.innerHeight - hh) / 1414);
-      setScale(s);
-    };
+    const hh = 124;
+    const s = Math.min((window.innerWidth - 24) / 1000, (window.innerHeight - hh) / 1414);
+    setScale(Math.max(s, 0.15)); // <-- Protección opcional para que no baje de 0.15
+  };
 
     handleResize();
     window.addEventListener("resize", handleResize);
