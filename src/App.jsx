@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { CONFIG } from "./config";
 import { formatCurrency } from "./utils/formatters";
 import { useCatalog } from "./hooks/useCatalog";
-import { precheckImage, preloadAndValidateCatalog } from "./utils/imageCache";
+import { precheckImage } from "./utils/imageCache";
 import "./App.css";
 
 import Header from "./components/Header";
@@ -124,7 +124,7 @@ export default function App() {
     [curPage, pages.length]
   );
 
-  // 1. Optimización del cálculo de escala para evitar Reflows constantes en el DOM
+  // 1. Cálculo de escala responsiva sin reflows agresivos
   useEffect(() => {
     const handleResize = () => {
       const hh = 124;
@@ -137,6 +137,7 @@ export default function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 2. Navegación por teclado
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
@@ -150,19 +151,13 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [curPage, pages.length, goToPage]);
 
-  // 2. Validación global en segundo plano de todo el catálogo al cargar los productos
-  useEffect(() => {
-    if (allProducts && allProducts.length > 0) {
-      preloadAndValidateCatalog(allProducts);
-    }
-  }, [allProducts]);
-
-  // 3. Precarga de imágenes diferida en páginas adyacentes
+  // 3. Precarga diferida de imágenes únicamente para las PRÓXIMAS 3 páginas
   useEffect(() => {
     if (!pages || pages.length === 0) return;
 
     const timer = setTimeout(() => {
-      const pageIndicesToPrecheck = [curPage - 1, curPage, curPage + 1].filter(
+      // Excluimos curPage (ya renderizada) y solo validamos las páginas hacia adelante
+      const pageIndicesToPrecheck = [curPage + 1, curPage + 2, curPage + 3].filter(
         (idx) => idx >= 0 && idx < pages.length
       );
 
@@ -173,8 +168,9 @@ export default function App() {
         pageData.forEach((block) => {
           if (block.r && Array.isArray(block.r)) {
             block.r.forEach((prod) => {
-              if (prod?.imagen) {
-                precheckImage(prod.imagen);
+              const imgUrl = prod?.imagen || prod?.imagen_url;
+              if (imgUrl) {
+                precheckImage(imgUrl);
               }
             });
           }
@@ -185,7 +181,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [curPage, pages]);
 
-  // 4. Resultados de búsqueda memorizados con useMemo
+  // 4. Búsqueda memorizada
   const searchResults = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const term = searchTerm.toLowerCase();
@@ -197,7 +193,7 @@ export default function App() {
     );
   }, [searchTerm, allProducts]);
 
-  // 5. Totales del carrito memorizados en un solo paso
+  // 5. Cálculo de totales memorizado
   const { totalCartItems, totalCartPrice } = useMemo(() => {
     return cart.reduce(
       (acc, item) => {
