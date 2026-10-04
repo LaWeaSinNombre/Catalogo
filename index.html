@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Catálogo Digital de Perfumes</title>
 
-  <!-- 1. Ícono de la pestaña del navegador -->
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- 2. Vista previa para WhatsApp (Formato compacto: foto pequeña a la izquierda) -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Catálogo Digital de Perfumes">
   <meta property="og:description" content="Haz clic para ver nuestro catálogo.">
   <meta property="og:image" content="https://laweasinnombre.github.io/Catalogo/favicon.png">
 
-  <!-- Este es el cambio clave: 'summary' en lugar de 'summary_large_image' -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Catálogo Digital de Perfumes">
   <meta name="twitter:description" content="Haz clic para ver nuestro catálogo.">
@@ -27,7 +24,6 @@
   <header>
     <h1>Catálogo</h1>
     
-    <!-- Contenedor del Buscador -->
     <div class="search-container">
       <input type="text" id="searchInput" placeholder="Buscar perfume, SKU..." autocomplete="off">
       <div id="searchResults" class="search-results"></div>
@@ -53,18 +49,29 @@
     <button id="bn">Siguiente</button>
   </footer>
 
-    <!-- Botón Flotante del Carrito -->
-  <button id="cart-float-btn" onclick="toggleCart()">
+  <!-- Botón Flotante del Carrito -->
+  <button id="cart-float-btn" onclick="toggleCart()" title="Ver pedido">
     🛒 <span id="cart-count">0</span>
   </button>
 
-  <!-- Modal / Ventana del Carrito -->
-  <div id="cart-modal" class="cart-modal">
-    <div class="cart-overlay" onclick="toggleCart()"></div>
-    <div class="cart-content">
+  <!-- Modal 1: Vista Detallada del Producto -->
+  <div id="product-modal" class="modal">
+    <div class="modal-overlay" onclick="closeProductModal()"></div>
+    <div class="modal-content product-detail-content">
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+      <div id="product-detail-body">
+        <!-- Contenido generado dinámicamente con JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Carrito de Compras -->
+  <div id="cart-modal" class="modal">
+    <div class="modal-overlay" onclick="toggleCart()"></div>
+    <div class="modal-content cart-content">
       <div class="cart-header">
         <h3>Mi Pedido 🛒</h3>
-        <button class="cart-close" onclick="toggleCart()">✕</button>
+        <button class="modal-close" onclick="toggleCart()">✕</button>
       </div>
       
       <div id="cart-items" class="cart-items">
@@ -82,6 +89,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast Notificación al agregar -->
+  <div id="toast" class="toast">¡Producto agregado al pedido! 🌸</div>
 
   <script src="script.js"></script>
 </body>

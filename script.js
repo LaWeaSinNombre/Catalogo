@@ -1,8 +1,8 @@
 const $ = i => document.getElementById(i);
 const m = n => "$" + (n || 0).toLocaleString("es-AR");
 
-// ⚠️ CONFIGURACIÓN: Reemplaza con tu número de WhatsApp (sin '+' ni espacios)
-const NUMERO_WHATSAPP = "+54 9 11 3683-7433".replace(/\D/g, ""); 
+// ⚠️ CONFIGURACIÓN: Reemplaza con el número de WhatsApp (sin '+' ni espacios)
+const NUMERO_WHATSAPP = "5491112345678"; 
 
 const DEFAULT_IMG = "default-perfume.png";
 
@@ -15,9 +15,8 @@ let busy = false;
 let PG = [];
 let SECS = [];
 let allProducts = [];
-let cart = []; // Estado del carrito
+let cart = [];
 
-// Precarga e inspección de imágenes en segundo plano
 function preloadImages(productos) {
   productos.forEach(p => {
     if (p.imagen && p.imagen.trim() !== "" && p.imagen !== DEFAULT_IMG) {
@@ -30,7 +29,7 @@ function preloadImages(productos) {
   });
 }
 
-// Renderizado de tarjeta de producto
+// Renderizado limpio de tarjeta de producto (sin botones pequeños)
 const card = (d) => {
   const imgSrc = d.imagen && d.imagen.trim() !== "" ? d.imagen : DEFAULT_IMG;
   const estado = (d.estado || "").toString().toLowerCase().trim();
@@ -47,7 +46,7 @@ const card = (d) => {
   }
 
   return `
-    <div class="c ${extraClass}">
+    <div class="c ${extraClass}" onclick="openProductModal(${d._idx})">
       <div class="img-wrap">
         <img alt="" 
              src="${imgSrc}" 
@@ -59,28 +58,84 @@ const card = (d) => {
       <div class="t">
         <b>${d.nombre}</b>
         <small>${d.detalles}</small>
-        
-        <div class="pr pr-action">
-          <div>
-            <span>UNIDAD</span>
-            <strong>${m(d.precio_unitario)}</strong>
-          </div>
-          <button class="btn-add" onclick="addToCart(${d._idx}, 'Unidad')">+ Agregar</button>
+        <div class="pr">
+          <span>UNIDAD</span>
+          <strong>${m(d.precio_unitario)}</strong>
         </div>
-
         ${d.empaque_bulto && d.precio_bulto > 0 ? `
-          <div class="pr bx pr-action">
-            <div>
-              <span>${d.empaque_bulto}</span>
-              <strong>${m(d.precio_bulto)}</strong>
-            </div>
-            <button class="btn-add" onclick="addToCart(${d._idx}, '${d.empaque_bulto}')">+ Agregar</button>
+          <div class="pr bx">
+            <span>${d.empaque_bulto}</span>
+            <strong>${m(d.precio_bulto)}</strong>
           </div>
         ` : ''}
       </div>
     </div>
   `;
 };
+
+// Abrir vista detallada del producto
+function openProductModal(idx) {
+  const prod = allProducts[idx];
+  if (!prod) return;
+
+  const imgSrc = prod.imagen && prod.imagen.trim() !== "" ? prod.imagen : DEFAULT_IMG;
+  const estado = (prod.estado || "").toString().toLowerCase().trim();
+  const isAvailable = estado !== "sin stock" && estado !== "agotado" && estado !== "pausada" && estado !== "pausado";
+
+  let statusBadge = "";
+  if (estado === "sin stock" || estado === "agotado") {
+    statusBadge = `<span class="detail-status sin-stock">AGOTADO</span>`;
+  } else if (estado === "pausada" || estado === "pausado") {
+    statusBadge = `<span class="detail-status pausado">PAUSADO</span>`;
+  }
+
+  const html = `
+    <div class="product-detail-img-wrap">
+      <img src="${imgSrc}" onerror="this.onerror=null;this.src='${DEFAULT_IMG}';">
+      ${statusBadge}
+    </div>
+    <div class="product-detail-info">
+      <h2>${prod.nombre}</h2>
+      <p class="detail-sub">${prod.detalles || ''}</p>
+      ${prod.categoria ? `<span class="detail-cat">${prod.categoria}</span>` : ''}
+
+      <div class="detail-options">
+        <div class="detail-option-card">
+          <div>
+            <span class="option-label">Por Unidad</span>
+            <strong class="option-price">${m(prod.precio_unitario)}</strong>
+          </div>
+          ${isAvailable ? `
+            <button class="btn-detail-add" onclick="addToCart(${prod._idx}, 'Unidad'); showToast();">
+              + Agregar
+            </button>
+          ` : `<span style="color:#e74c3c; font-weight:700; font-size:12px;">Sin Stock</span>`}
+        </div>
+
+        ${prod.empaque_bulto && prod.precio_bulto > 0 ? `
+          <div class="detail-option-card bx-card">
+            <div>
+              <span class="option-label">${prod.empaque_bulto}</span>
+              <strong class="option-price">${m(prod.precio_bulto)}</strong>
+            </div>
+            ${isAvailable ? `
+              <button class="btn-detail-add" onclick="addToCart(${prod._idx}, '${prod.empaque_bulto}'); showToast();">
+                + Agregar
+              </button>
+            ` : `<span style="color:#e74c3c; font-weight:700; font-size:12px;">Sin Stock</span>`}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  $("product-detail-body").innerHTML = html;
+  $("product-modal").classList.add("active");
+}
+
+function closeProductModal() {
+  $("product-modal").classList.remove("active");
+}
 
 // Lógica del Carrito
 function addToCart(prodIndex, tipo) {
@@ -149,6 +204,12 @@ function toggleCart() {
   $("cart-modal").classList.toggle("active");
 }
 
+function showToast() {
+  const t = $("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
 function sendWhatsApp() {
   if (cart.length === 0) {
     alert("El carrito está vacío. Agrega productos antes de enviar el pedido.");
@@ -188,7 +249,7 @@ function page(n) {
     `;
   }
   if (p === "how") {
-    return `<div class="pg"><div class="how"><h2>¿Cómo pedir?</h2><p>1. Seleccioná tus perfumes con el botón <b>+ Agregar</b>.</p><p>2. Tocá el botón verde del carrito para revisar tu pedido.</p><p>3. Hacé clic en <b>Enviar Pedido por WhatsApp</b>.</p></div></div>`;
+    return `<div class="pg"><div class="how"><h2>¿Cómo pedir?</h2><p>1. Toca cualquier perfume para ver sus detalles.</p><p>2. Seleccioná la cantidad por unidad o bulto y sumalo a tu pedido.</p><p>3. Tocá el carrito flotante y presioná <b>Enviar Pedido por WhatsApp</b>.</p></div></div>`;
   }
 
   return `
@@ -392,7 +453,7 @@ async function loadCatalog() {
   
   const CACHE_KEY = "catalogo_perfumes_data";
   const CACHE_TIME_KEY = "catalogo_perfumes_time";
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de caché
+  const CACHE_TTL = 5 * 60 * 1000;
 
   const cachedData = localStorage.getItem(CACHE_KEY);
   const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
@@ -468,9 +529,12 @@ bk.addEventListener("touchend", e => {
 
 addEventListener("resize", fit);
 
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
 window.addToCart = addToCart;
 window.changeQty = changeQty;
 window.toggleCart = toggleCart;
+window.showToast = showToast;
 window.sendWhatsApp = sendWhatsApp;
 window.allProducts = allProducts;
 window.flip = flip;
