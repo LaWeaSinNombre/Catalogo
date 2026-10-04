@@ -8,7 +8,7 @@ export default function ProductImage({ src, alt }) {
 
   const [failed, setFailed] = useState(false);
 
-  // Si la URL está vacía, falló localmente o ya fue marcada como rota en la precarga
+  // Si la URL está vacía, falló localmente o ya fue marcada como rota
   const isBroken = !cleanSrc || failed || isUrlBroken(cleanSrc);
   const imgSrc = isBroken ? defaultImg : cleanSrc;
 
@@ -17,6 +17,7 @@ export default function ProductImage({ src, alt }) {
       src={imgSrc}
       alt={alt || ""}
       loading="eager"
+      decoding="async" /* <-- CRUCIAL: Evita que la descodificación congele el giro 3D */
       onError={() => {
         if (cleanSrc) {
           markUrlAsBroken(cleanSrc);
