@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { CONFIG } from "../config";
 
+const CATALOG_URL = "https://ysbcqzdsvhkyycwqryaf.supabase.co/storage/v1/object/public/productos/catalogo.json";
+
 // Función pura fuera del Hook para transformar los datos sin causar efectos secundarios
 function processCatalogData(productos) {
   const visibles = productos.filter((p) => {
@@ -8,7 +10,11 @@ function processCatalogData(productos) {
     return st !== "se dejo de vender" && st !== "se dejó de vender" && st !== "desactivado";
   });
 
-  const allProducts = visibles.map((p, i) => ({ ...p, _idx: i }));
+  // Asigna el `id` original del JSON a `_idx` para compatibilidad total con la lógica del carrito
+  const allProducts = visibles.map((p, i) => ({
+    ...p,
+    _idx: p.id !== undefined ? p.id : i
+  }));
 
   const pages = ["cover", "index", "how"];
   const sections = [
@@ -101,7 +107,7 @@ export function useCatalog() {
       }
 
       try {
-        const res = await fetch(CONFIG.googleSheetsUrl);
+        const res = await fetch(CATALOG_URL);
         if (!res.ok) throw new Error("Error " + res.status);
         const data = await res.json();
 
@@ -115,7 +121,7 @@ export function useCatalog() {
           setSections(processed.sections);
         }
       } catch (err) {
-        console.error("Error cargando Google Sheets:", err);
+        console.error("Error cargando el catálogo desde Supabase:", err);
         if (cachedData) {
           try {
             const processed = processCatalogData(JSON.parse(cachedData));
