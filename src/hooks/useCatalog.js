@@ -25,13 +25,12 @@ function processCatalogData(productos) {
 
     // Estandarizado a la columna real: imagen_url
     let img = p.imagen_url || "";
-    if (img && typeof img === "string" && img.trim() !== "" && img !== "NULL") {
-      img = img.trim();
-      if (!img.startsWith("http://") && !img.startsWith("https://")) {
-        img = `${BUCKET_BASE_URL}/${img.replace(/^\/+/, "")}`;
-      }
-    } else {
+
+    if (!img || img === "Default" || img.trim() === "" || img === "NULL") {
+      // Si dice "Default" o está vacía, se asigna directamente la imagen local sin hacer peticiones
       img = CONFIG.defaultImg || "default-perfume.png";
+    } else if (!img.startsWith("http://") && !img.startsWith("https://")) {
+      img = `${BUCKET_BASE_URL}/${img.replace(/^\/+/, "")}`;
     }
 
     return {
