@@ -38,7 +38,7 @@ export default function Header({
     <header>
       {/* Contenedor de marca: en PC muestra logo + título, en móvil solo logo */}
       <div className="header-brand">
-        <img src="/favicon.png" alt="Logo" className="header-logo" />
+        <img src="/favicon.ico" alt="Logo" className="header-logo" />
         <h1 className="header-title">{CONFIG.brandName}</h1>
       </div>
 
