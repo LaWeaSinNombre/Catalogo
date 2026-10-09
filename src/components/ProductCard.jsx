@@ -18,7 +18,8 @@ export default function ProductCard({ product, onClick }) {
   return (
     <div className={`c ${extraClass}`} onClick={onClick}>
       <div className="img-wrap">
-        <ProductImage src={product.imagen} alt={product.nombre} />
+        {/* Cambiado de product.imagen a product.imagen_url */}
+        <ProductImage src={product.imagen_url} alt={product.nombre} />
         {badgeText && <div className={`badge-banner ${extraClass}`}>{badgeText}</div>}
       </div>
       <div className="t">
@@ -28,9 +29,10 @@ export default function ProductCard({ product, onClick }) {
           <span>UNIDAD</span>
           <strong>{formatCurrency(product.precio_unitario)}</strong>
         </div>
-        {product.empaque_bulto && Number(product.precio_bulto) > 0 && (
+        {/* Cambiado de product.empaque_bulto a product.empaque */}
+        {product.empaque && Number(product.precio_bulto) > 0 && (
           <div className="pr bx">
-            <span>{product.empaque_bulto}</span>
+            <span>{product.empaque}</span>
             <strong>{formatCurrency(product.precio_bulto)}</strong>
           </div>
         )}

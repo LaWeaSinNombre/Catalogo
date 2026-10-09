@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CONFIG } from "../config";
 
-// Credenciales y URLs de Supabase
 const SUPABASE_URL = CONFIG.supabaseUrl || "https://ysbcqzdsvhkyycwqryaf.supabase.co";
 const SUPABASE_ANON_KEY = CONFIG.supabaseAnonKey || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmNxemRzdmhreXljd3FyeWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNTcyNTUsImV4cCI6MjEwNjczMzI1NX0.g1DA3-r92J5QAVEkoi4ia5QXQ0TOyv-zaPzrGAUmL0k";
 
@@ -11,9 +10,8 @@ const CATALOGO_URL = `${SUPABASE_URL}/rest/v1/vista_catalogo?select=*`;
 
 const CACHE_DATA_KEY = "cat_perfumes_data";
 const CACHE_VERSION_KEY = "cat_perfumes_version";
-const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
+const CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
-// Transformación de datos del catálogo
 function processCatalogData(productos) {
   const visibles = productos.filter((p) => {
     const stRaw = typeof p.estado === "object" ? p.estado?.nombre : p.estado;
@@ -25,7 +23,8 @@ function processCatalogData(productos) {
     const catRaw = typeof p.categoria === "object" ? p.categoria?.nombre : p.categoria;
     const categoria = catRaw && catRaw.trim() !== "" ? catRaw.trim() : "General";
 
-    let img = p.imagen || p.imagen_url || "";
+    // Estandarizado a la columna real: imagen_url
+    let img = p.imagen_url || "";
     if (img && typeof img === "string" && img.trim() !== "" && img !== "NULL") {
       img = img.trim();
       if (!img.startsWith("http://") && !img.startsWith("https://")) {
@@ -38,7 +37,7 @@ function processCatalogData(productos) {
     return {
       ...p,
       categoria,
-      imagen: img,
+      imagen_url: img,
       _idx: p.id !== undefined ? p.id : i
     };
   });
@@ -98,7 +97,6 @@ function processCatalogData(productos) {
   return { allProducts, pages, sections };
 }
 
-// Función auxiliar para recuperar la caché antes del primer renderizado
 function getInitialCatalogState() {
   try {
     const cachedDataRaw = localStorage.getItem(CACHE_DATA_KEY);
@@ -113,112 +111,86 @@ function getInitialCatalogState() {
 }
 
 export function useCatalog() {
-  // Inicialización perezosa desde caché (0 ms)
   const [catalogData, setCatalogData] = useState(getInitialCatalogState);
   const [loading, setLoading] = useState(() => catalogData.allProducts.length === 0);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const performCheck = async () => {
-      const headers = {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-      };
-
-      try {
-        // 1. Petición ultraligera de metadatos (~0.1 KB)
-        const metaRes = await fetch(META_URL, { headers });
-        let serverVersion = null;
-
-        if (metaRes.ok) {
-          const metaData = await metaRes.json();
-          if (metaData && metaData.length > 0) {
-            serverVersion = metaData[0].version;
-          }
-        }
-
-        const localVersion = localStorage.getItem(CACHE_VERSION_KEY);
-        const cachedDataRaw = localStorage.getItem(CACHE_DATA_KEY);
-
-        // 2. Si la versión no cambió y hay datos en caché, no hacer nada más
-        if (serverVersion && localVersion === String(serverVersion) && cachedDataRaw) {
-          if (isMounted) setLoading(false);
-          return;
-        }
-
-        // 3. Si hubo cambios, descargar la vista materializada completa
-        const catRes = await fetch(CATALOGO_URL, { headers });
-        if (!catRes.ok) throw new Error("Error HTTP " + catRes.status);
-        const freshData = await catRes.json();
-
-        localStorage.setItem(CACHE_DATA_KEY, JSON.stringify(freshData));
-        if (serverVersion) {
-          localStorage.setItem(CACHE_VERSION_KEY, String(serverVersion));
-        }
-
-        const processed = processCatalogData(freshData);
-        if (isMounted) {
-          setCatalogData(processed);
-          setError(null);
-        }
-      } catch (err) {
-        console.error("Error comprobando versión del catálogo:", err);
-        if (isMounted) {
-          setCatalogData((current) => {
-            if (current.allProducts.length === 0) {
-              const fallbackRaw = localStorage.getItem(CACHE_DATA_KEY);
-              if (fallbackRaw) {
-                try {
-                  return processCatalogData(JSON.parse(fallbackRaw));
-                } catch {
-                  setError("No se pudieron cargar los productos.");
-                }
-              } else {
-                setError("No se pudieron cargar los productos.");
-              }
-            }
-            return current;
-          });
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+  const checkAndUpdateCatalog = useCallback(async () => {
+    const headers = {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
     };
 
-    // Se difiere la ejecución a una tarea asíncrona para no bloquear el efecto inicial
+    try {
+      const metaRes = await fetch(META_URL, { headers });
+      let serverVersion = null;
+
+      if (metaRes.ok) {
+        const metaData = await metaRes.json();
+        if (metaData && metaData.length > 0) {
+          serverVersion = metaData[0].version;
+        }
+      }
+
+      const localVersion = localStorage.getItem(CACHE_VERSION_KEY);
+      const cachedDataRaw = localStorage.getItem(CACHE_DATA_KEY);
+
+      if (serverVersion && localVersion === String(serverVersion) && cachedDataRaw) {
+        setLoading(false);
+        return false;
+      }
+
+      const catRes = await fetch(CATALOGO_URL, { headers });
+      if (!catRes.ok) throw new Error("Error HTTP " + catRes.status);
+      const freshData = await catRes.json();
+
+      localStorage.setItem(CACHE_DATA_KEY, JSON.stringify(freshData));
+      if (serverVersion) {
+        localStorage.setItem(CACHE_VERSION_KEY, String(serverVersion));
+      }
+
+      const processed = processCatalogData(freshData);
+      setCatalogData(processed);
+      setError(null);
+      return true;
+    } catch (err) {
+      console.error("Error comprobando versión del catálogo:", err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
     const initialTimer = setTimeout(() => {
-      performCheck();
+      checkAndUpdateCatalog();
     }, 0);
 
-    // Verificación periódica cada 5 minutos
     const interval = setInterval(() => {
-      performCheck();
+      checkAndUpdateCatalog();
     }, CHECK_INTERVAL_MS);
 
-    // Verificación al regresar a la pestaña
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        performCheck();
+        checkAndUpdateCatalog();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      isMounted = false;
       clearTimeout(initialTimer);
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [checkAndUpdateCatalog]);
 
   return {
     allProducts: catalogData.allProducts,
     pages: catalogData.pages,
     sections: catalogData.sections,
     loading,
-    error
+    error,
+    checkAndUpdateCatalog
   };
 }

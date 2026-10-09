@@ -2,7 +2,8 @@ import { CONFIG } from "../config";
 import { formatCurrency } from "../utils/formatters";
 
 export default function ProductDetailModal({ product, onClose, onAddToCart }) {
-  const imgSrc = product.imagen?.trim() ? product.imagen : CONFIG.defaultImg;
+  // Cambiado de product.imagen a product.imagen_url
+  const imgSrc = product.imagen_url?.trim() ? product.imagen_url : CONFIG.defaultImg;
   const estado = (product.estado || "").toString().toLowerCase().trim();
   const isAvailable =
     estado !== "sin stock" && estado !== "agotado" && estado !== "pausada" && estado !== "pausado";
@@ -57,7 +58,8 @@ export default function ProductDetailModal({ product, onClose, onAddToCart }) {
             )}
           </div>
 
-          {product.empaque_bulto && Number(product.precio_bulto) > 0 && (
+          {/* Cambiado de product.empaque_bulto a product.empaque */}
+          {product.empaque && Number(product.precio_bulto) > 0 && (
             <div
               style={{
                 display: "flex",
@@ -70,7 +72,7 @@ export default function ProductDetailModal({ product, onClose, onAddToCart }) {
             >
               <div>
                 <span style={{ fontSize: 12, color: "var(--mut)" }}>
-                  {product.empaque_bulto}
+                  {product.empaque}
                 </span>
                 <br />
                 <strong>{formatCurrency(product.precio_bulto)}</strong>
@@ -78,7 +80,7 @@ export default function ProductDetailModal({ product, onClose, onAddToCart }) {
               {isAvailable ? (
                 <button
                   style={{ background: "#5b3a8e", color: "#fff" }}
-                  onClick={() => onAddToCart(product, product.empaque_bulto)}
+                  onClick={() => onAddToCart(product, product.empaque)}
                 >
                   + Agregar
                 </button>
